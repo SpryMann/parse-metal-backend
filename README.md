@@ -2,7 +2,9 @@
 
 ## TODO:
 
-- [ ] Save data to db
+- Database
+  - [x] Create models
+  - [ ] Save data to db
 - [ ] Authentication
 - [ ] Parsing on request
 
@@ -11,8 +13,7 @@
 - Backend
   - Node.js
   - Express.js
-- DB (?)
+- DB
   - MongoDB
-  - MySQL
 - Frontend
   - React.js
