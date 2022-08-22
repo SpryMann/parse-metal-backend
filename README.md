@@ -6,6 +6,7 @@
   - [x] Create models
   - [ ] Save data to db
 - [ ] Authentication
+  - [ ] JWT Tokens
 - [ ] Parsing on request
 
 ## Stack
