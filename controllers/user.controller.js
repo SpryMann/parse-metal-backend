@@ -1,5 +1,5 @@
 const userService = require('./../services/user.service');
-const { validationResult } = require('express-validator');
+const {validationResult} = require('express-validator');
 const ApiError = require('../exceptions/apiError');
 
 class UserController {
@@ -13,7 +13,7 @@ class UserController {
         );
       }
 
-      const { username, password } = req.body;
+      const {username, password} = req.body;
       const userData = await userService.registration(username, password);
       res.cookie('refreshToken', userData.refreshToken, {
         maxAge: 1000 * 3600 * 24 * 30,
@@ -28,7 +28,7 @@ class UserController {
 
   async login(req, res, next) {
     try {
-      const { username, password } = req.body;
+      const {username, password} = req.body;
       const userData = await userService.login(username, password);
       res.cookie('refreshToken', userData.refreshToken, {
         maxAge: 1000 * 3600 * 24 * 30,
@@ -43,7 +43,7 @@ class UserController {
 
   async logout(req, res, next) {
     try {
-      const { refreshToken } = req.cookies;
+      const {refreshToken} = req.cookies;
       const token = await userService.logout(refreshToken);
       res.clearCookie('refreshToken');
 
@@ -55,7 +55,7 @@ class UserController {
 
   async refresh(req, res, next) {
     try {
-      const { refreshToken } = res.cookies;
+      const {refreshToken} = req.cookies;
       const userData = await userService.refresh(refreshToken);
       res.cookie('refreshToken', userData.refreshToken, {
         maxAge: 1000 * 3600 * 24 * 30,

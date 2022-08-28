@@ -6,6 +6,7 @@ const productSchema = new Schema({
   link: String,
   targetLink: String,
   price: Number,
+  categoryId: Number,
 });
 
 module.exports = productSchema;
