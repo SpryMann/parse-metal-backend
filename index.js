@@ -23,10 +23,14 @@ const port = process.env.PORT || 5001;
 
 async function start() {
   try {
-    app.listen(port, () => {
+    const server = app.listen(port, () => {
       console.log(`Server started at ${port}`);
     });
     mongoose.connect(process.env.MONGO_URL);
+
+    process.on('SIGTERM', () => {
+      server.close();
+    });
   } catch (error) {
     console.log(error);
   }
