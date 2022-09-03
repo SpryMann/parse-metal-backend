@@ -9,9 +9,9 @@
   - [x] JWT Tokens
 - [x] Parsing on request
 - Products
-  - [ ] Add product
-  - [ ] Update product
-  - [ ] Delete product
+  - [x] Add product
+  - [x] Update product
+  - [x] Delete product
 
 ## Stack
 
