@@ -10,5 +10,8 @@ router.get(
 );
 router.get('/retrieve/:id', productController.getOne);
 router.post('/upload', upload.single('excelFile'), productController.upload);
+router.post('/', productController.create);
+router.put('/:id', productController.update);
+router.delete('/:id', productController.delete);
 
 module.exports = router;

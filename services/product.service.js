@@ -88,7 +88,119 @@ class ProductService {
       };
     });
 
+    await productModel.deleteMany({ categoryId: parseInt(category) });
     await productModel.insertMany(productsInfo);
+
+    const newProducts = await productModel.find({
+      categoryId: parseInt(category),
+    });
+
+    await existedCategoryModel.updateOne(
+      { id: parseInt(category) },
+      {
+        productsCount: newProducts.length,
+      }
+    );
+  }
+
+  async create(
+    productTitle,
+    productLink,
+    productTargetLink,
+    productCategoryId
+  ) {
+    const foundCategory = await categoryModel.findOne({
+      id: parseInt(productCategoryId),
+    });
+    await existedCategoryModel.updateOne(
+      { id: parseInt(productCategoryId) },
+      {
+        id: foundCategory.id,
+        title: foundCategory.title,
+        productsCount: foundCategory.productsCount,
+      },
+      {
+        upsert: true,
+      }
+    );
+
+    const categoryProductsCount = (
+      await woocommerceService.getCategory(productCategoryId)
+    ).count;
+    const categoryProducts = [];
+
+    for (const page of Array.from(
+      Array(Math.ceil(categoryProductsCount / 100) + 1).keys()
+    ).slice(1)) {
+      categoryProducts.push(
+        ...(await woocommerceService.getProductsByCategory(
+          productCategoryId,
+          100,
+          page
+        ))
+      );
+    }
+
+    const foundProduct = categoryProducts.find(
+      (item) => item.permalink === productLink
+    );
+
+    if (foundProduct) {
+      await productModel.updateOne(
+        { link: foundProduct.permalink },
+        {
+          id: foundProduct.id,
+          title: productTitle,
+          link: foundProduct.permalink,
+          targetLink: productTargetLink,
+          price: parseInt(foundProduct.price) || 0,
+          categoryId: productCategoryId,
+        },
+        {
+          upsert: true,
+        }
+      );
+    }
+
+    const newProducts = await productModel.find({
+      categoryId: parseInt(productCategoryId),
+    });
+
+    await existedCategoryModel.updateOne(
+      { id: parseInt(productCategoryId) },
+      {
+        productsCount: newProducts.length,
+      }
+    );
+  }
+
+  async update(productId, productTitle, productLink, productTargetLink) {
+    await productModel.findOneAndUpdate(
+      { id: productId },
+      {
+        title: productTitle,
+        link: productLink,
+        targetLink: productTargetLink,
+      }
+    );
+  }
+
+  async delete(productId) {
+    const product = await productModel.findOne({ id: productId });
+    const productCategory = product.categoryId;
+    await product.delete();
+    const categoryProductsLeft = await productModel.find({
+      categoryId: productCategory,
+    });
+
+    if (!categoryProductsLeft.length) {
+      await existedCategoryModel.findOneAndDelete({ id: productCategory });
+    } else {
+      await existedCategoryModel.findOneAndUpdate(
+        { id: productCategory },
+        { productsCount: categoryProductsLeft.length }
+      );
+    }
   }
 }
 
