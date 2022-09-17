@@ -34,9 +34,6 @@ async function parseCategory(categoryUrl) {
     });
     const document = new JSDOM(html).window.document;
     const table = document.querySelector('#tab_main1');
-    const tableHeadItems = [
-      ...document.querySelectorAll('.catalogItemsFilters > li'),
-    ];
     const tableColumns = [
       'name',
       'url',
@@ -131,7 +128,7 @@ async function compareProductsInfo(parsedProducts, categoryId) {
 
       newProducts.push({
         ...product,
-        newPrice: newPrice || (await parseProductPrice(product.targetLink)),
+        newPrice: newPrice || 0,
       });
     }
 

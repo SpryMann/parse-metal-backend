@@ -46,7 +46,7 @@ class WoocommerceService {
       for (const product of products.slice(0, 50)) {
         productsBulk.push({
           id: product.id,
-          regular_price: product.price.toString(),
+          regular_price: product.price ? product.price.toString() : '',
         });
       }
 
