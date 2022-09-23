@@ -59,6 +59,16 @@ class WoocommerceService {
 
     iterate(products);
   }
+
+  async getTotalPages(uri, filters) {
+    const response = await woocommerce.get(uri, {
+      params: {
+        ...filters,
+      },
+    });
+
+    return response.headers['x-wp-totalpages'];
+  }
 }
 
 module.exports = new WoocommerceService();

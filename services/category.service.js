@@ -29,9 +29,20 @@ class CategoryService {
   }
 
   async update() {
-    const categories = await woocommerceService.getAllCategories({
-      per_page: 100,
-    });
+    const totalPages = await woocommerceService.getTotalPages(
+      '/wp-json/wc/v3/products/categories',
+      {
+        per_page: 100,
+      }
+    );
+    let categories = [];
+
+    for (let page = 1; page <= totalPages; page += 1) {
+      categories.push(
+        ...(await woocommerceService.getAllCategories({ per_page: 100, page }))
+      );
+    }
+
     const categoriesInfo = categories.map((category) => {
       return {
         id: category.id,
