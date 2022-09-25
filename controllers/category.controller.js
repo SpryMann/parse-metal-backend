@@ -41,6 +41,17 @@ class CategoryController {
       next(error);
     }
   }
+
+  async updateExisted(req, res, next) {
+    try {
+      const { categories } = req.body;
+      await categoryService.updateExisted(categories);
+
+      return res.status(201).json('Updated');
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new CategoryController();

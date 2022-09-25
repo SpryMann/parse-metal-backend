@@ -44,7 +44,6 @@ class ParserController {
   async start(req, res, next) {
     try {
       const { categories } = req.body;
-      await categoryService.updateExisted(categories);
       parseStart(categories);
 
       return res.status(201).json('Started');

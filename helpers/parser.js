@@ -25,13 +25,52 @@ async function getCategoryUrl(categoryId) {
   }
 }
 
-async function parseCategory(categoryUrl) {
+async function getCategoryTotalPages(categoryUrl) {
   try {
-    const { data: html } = await mc.get(`${categoryUrl}/PageAll/1`, {
+    const { data: html } = await mc.get(`${categoryUrl}/Page100/1`, {
       headers: {
         'User-Agent': fakeUa(),
       },
     });
+    const document = new JSDOM(html).window.document;
+    const catalogPaginator = document.querySelector('.catalogPaginator');
+    const paginationUl = catalogPaginator.querySelector('ul');
+
+    if (!paginationUl) {
+      return 1;
+    }
+
+    return parseInt(
+      paginationUl.querySelector('li:last-of-type').textContent.trim()
+    );
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function parseCategory(categoryUrl) {
+  try {
+    const totalPages = await getCategoryTotalPages(categoryUrl);
+    const productsInfo = [];
+
+    for (const page of Array.from(Array(totalPages + 1).keys()).slice(1)) {
+      const { data: html } = await mc.get(`${categoryUrl}/Page100/${page}`, {
+        headers: {
+          'User-Agent': fakeUa(),
+        },
+      });
+
+      productsInfo.push(...readCategory(html));
+    }
+
+    return productsInfo;
+  } catch (error) {
+    throw error;
+  }
+}
+
+function readCategory(html) {
+  try {
     const document = new JSDOM(html).window.document;
     const table = document.querySelector('#tab_main1');
     const tableColumns = [
@@ -49,7 +88,7 @@ async function parseCategory(categoryUrl) {
     const productsInfo = [];
 
     for (const tableBodyItem of tableBodyItems) {
-      const productColumns = tableBodyItem.querySelectorAll('td');
+      const productColumns = [...tableBodyItem.querySelectorAll('td')];
       const productTitle = productColumns[0]
         .querySelectorAll('a')[1]
         .textContent.trim();
@@ -61,8 +100,9 @@ async function parseCategory(categoryUrl) {
       const productLength = productColumns[3].textContent.trim();
       const productCity = productColumns[4].textContent.trim();
       const productPrice = parseInt(
-        productColumns[6].textContent
-          .trim()
+        productColumns
+          .find((item) => item.getAttribute('data-price-val') === '2')
+          .textContent.trim()
           .split('')
           .filter((item) => /\d/.test(item))
           .join('')
@@ -194,6 +234,9 @@ async function parseStart(categories) {
       }
 
       await woocommerceService.updateProductsByCategory(category.id);
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+      });
 
       serverState.parser.logs[
         serverState.parser.logs.length - 1
