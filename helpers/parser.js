@@ -10,16 +10,20 @@ const woocommerceService = require('../services/woocommerce.service');
 async function getCategoryUrl(categoryId) {
   try {
     const productUrl = (await productModel.findOne({ categoryId })).targetLink;
-    const { data: html } = await mc.get(productUrl.split('https://mc.ru')[1], {
+    const response = await mc.get(productUrl.split('https://mc.ru')[1], {
       headers: {
         'User-Agent': fakeUa(),
       },
     });
-    const document = new JSDOM(html).window.document;
+    const document = new JSDOM(response.data).window.document;
 
-    return [...document.querySelectorAll('.UrlSpeed > span > a')]
-      .slice(-1)[0]
-      .href.trim();
+    if (productUrl === response.request.res.responseUrl) {
+      return [...document.querySelectorAll('.UrlSpeed > span > a')]
+        .slice(-1)[0]
+        .href.trim();
+    } else {
+      return response.request.res.responseUrl;
+    }
   } catch (error) {
     throw error;
   }
@@ -34,7 +38,9 @@ async function getCategoryTotalPages(categoryUrl) {
     });
     const document = new JSDOM(html).window.document;
     const catalogPaginator = document.querySelector('.catalogPaginator');
-    const paginationUl = catalogPaginator.querySelector('ul');
+    const paginationUl = catalogPaginator
+      ? catalogPaginator.querySelector('ul')
+      : null;
 
     if (!paginationUl) {
       return 1;
