@@ -7,7 +7,7 @@ const {
   parseStart,
 } = require('../helpers/parser');
 const productService = require('../services/product.service');
-const categoryService = require('../services/category.service');
+const ParserDto = require('./../dtos/parser.dto');
 
 class ParserController {
   async categoryUrl(req, res, next) {
@@ -54,7 +54,8 @@ class ParserController {
 
   status(req, res, next) {
     try {
-      return res.status(200).json(serverState.parser);
+      const parserStatus = new ParserDto(serverState.parser);
+      return res.status(200).json({ ...parserStatus });
     } catch (error) {
       next(error);
     }

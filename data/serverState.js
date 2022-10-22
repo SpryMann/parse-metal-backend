@@ -4,6 +4,15 @@ const serverState = {
     completed: true,
     errors: [],
     logs: [],
+    lastParsingDate: 0,
+    timeoutId: null,
+  },
+  settings: {
+    autoParsing: {
+      isEnabled: true,
+      timeMorning: 6,
+      timeEvening: 19,
+    },
   },
 };
 

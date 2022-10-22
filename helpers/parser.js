@@ -2,10 +2,11 @@ const mc = require('./../configs/requests.config');
 const fakeUa = require('fake-useragent');
 const { JSDOM } = require('jsdom');
 const productService = require('../services/product.service');
+const woocommerceService = require('../services/woocommerce.service');
+const categoryService = require('../services/category.service');
 const { productModel } = require('../models');
 const ProductDto = require('./../dtos/product.dto');
 const serverState = require('../data/serverState');
-const woocommerceService = require('../services/woocommerce.service');
 
 async function getCategoryUrl(categoryId) {
   try {
@@ -210,6 +211,7 @@ async function parseStart(categories) {
   try {
     serverState.parser.logs = [];
     serverState.parser.isRunning = true;
+    serverState.parser.completed = false;
 
     for (const category of categories) {
       if (!(await productModel.find({ categoryId: category.id })).length) {
@@ -255,6 +257,7 @@ async function parseStart(categories) {
     serverState.parser.isRunning = false;
     serverState.parser.completed = true;
     serverState.parser.errors = [];
+    serverState.parser.lastParsingDate = Date.now();
   } catch (error) {
     console.log(serverState.parser.logs);
     serverState.parser.logs[
@@ -268,10 +271,67 @@ async function parseStart(categories) {
   }
 }
 
+async function scheduleParsing() {
+  try {
+    if (serverState.settings.autoParsing.isEnabled) {
+      if (serverState.parser.timeoutId) {
+        clearTimeout(serverState.parser.timeoutId);
+        serverState.parser.timeoutId = null;
+      }
+
+      let delay = 0;
+      const timeMorning = serverState.settings.autoParsing.timeMorning;
+      const timeEvening = serverState.settings.autoParsing.timeEvening;
+
+      if (new Date().getHours() < timeMorning) {
+        delay = new Date().setHours(timeMorning, 0, 0, 0) - Date.now();
+      } else if (
+        new Date().getHours() >= timeMorning &&
+        new Date().getHours() < timeEvening
+      ) {
+        delay = new Date().setHours(timeEvening, 0, 0, 0) - Date.now();
+      } else if (new Date().getHours() >= timeEvening) {
+        delay =
+          new Date(new Date().setDate(new Date().getDate() + 1)).setHours(
+            timeMorning,
+            0,
+            0,
+            0
+          ) - Date.now();
+      }
+
+      const categories = (await categoryService.getExisted()).map(
+        (category) => ({
+          name: category.title,
+          id: category.id,
+          percent: category.percent,
+        })
+      );
+
+      console.log(
+        `Next parsing at: ${new Date(Date.now() + delay).toLocaleString()}`
+      );
+
+      serverState.parser.timeoutId = setTimeout(() => {
+        parseStart(categories);
+        scheduleParsing();
+      }, delay);
+    } else {
+      if (serverState.parser.timeoutId) {
+        clearTimeout(serverState.parser.timeoutId);
+        serverState.parser.timeoutId = null;
+      }
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
 module.exports = {
   getCategoryUrl,
   parseCategory,
   compareProductsInfo,
   editProductsPrices,
   parseStart,
+  scheduleParsing,
 };

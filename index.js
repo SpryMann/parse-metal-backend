@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const { default: mongoose } = require('mongoose');
 const router = require('./routes');
 const errorMiddleware = require('./middlewares/error.middleware');
+const { scheduleParsing } = require('./helpers/parser');
 
 const app = express();
 app.use(express.json());
@@ -27,6 +28,7 @@ async function start() {
       console.log(`Server started at ${port}`);
     });
     mongoose.connect(process.env.MONGO_URL);
+    scheduleParsing();
 
     process.on('SIGTERM', () => {
       server.close();

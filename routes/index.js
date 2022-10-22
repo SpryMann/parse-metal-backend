@@ -4,6 +4,7 @@ const productRouter = require('./product.route');
 const categoryRouter = require('./category.route');
 const parserRouter = require('./parser.route');
 const tableRouter = require('./table.route');
+const settingsRouter = require('./settings.route');
 
 const router = new Router();
 
@@ -12,5 +13,6 @@ router.use('/product', productRouter);
 router.use('/category', categoryRouter);
 router.use('/parser', parserRouter);
 router.use('/table', tableRouter);
+router.use('/settings', settingsRouter);
 
 module.exports = router;
