@@ -54,6 +54,10 @@ class WoocommerceService {
         update: productsBulk,
       });
 
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1000);
+      });
+
       iterate(products.slice(50));
     }
 

@@ -37,6 +37,8 @@ class UserController {
         httpOnly: true,
       });
 
+      console.log(`[${new Date().toLocaleString()}]: ${username} is logged in`);
+
       return res.json(userData);
     } catch (error) {
       next(error);
@@ -63,6 +65,12 @@ class UserController {
         maxAge: 1000 * 3600 * 24 * 30,
         httpOnly: true,
       });
+
+      console.log(
+        `[${new Date().toLocaleString()}]: ${
+          userData.user.username
+        } refreshed token`
+      );
 
       return res.json(userData);
     } catch (error) {

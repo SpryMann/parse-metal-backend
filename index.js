@@ -34,7 +34,7 @@ async function start() {
       server.close();
     });
   } catch (error) {
-    console.log(error);
+    console.log(`[${new Date().toLocaleString()}]: Error: ${error.message}`);
   }
 }
 
